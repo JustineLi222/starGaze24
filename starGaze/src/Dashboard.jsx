@@ -9,14 +9,28 @@ import { PieChart } from '@mui/x-charts/PieChart';
 import { BarChart } from '@mui/x-charts/BarChart';
 
 const binData = {
-  occupiedSpace: 70,
-  totalCapacity: '100L',
-  currentWeight: '45kg',
-  wasteTypes: [
-    { type: 'Plastic', value: 45, color: '#2196f3', id: 0 },
-    { type: 'Paper', value: 25, color: '#4caf50', id: 1 },
-    { type: 'Metal', value: 15, color: '#ff9800', id: 2 },
-    { type: 'Other', value: 15, color: '#9e9e9e', id: 3 },
+  bins: [
+    {
+      id: 1,
+      name: 'Plastic Waste Bin',
+      occupiedSpace: 70,
+      totalCapacity: 100,
+      currentWeight: 45,
+    },
+    {
+      id: 2,
+      name: 'Metal Waste Bin',
+      occupiedSpace: 50,
+      totalCapacity: 100,
+      currentWeight: 35,
+    },
+    {
+      id: 3,
+      name: 'General Waste Bin',
+      occupiedSpace: 60,
+      totalCapacity: 100,
+      currentWeight: 40,
+    }
   ],
   weeklyData: [
     { day: 'Mon', weight: 30 },
@@ -28,8 +42,15 @@ const binData = {
     { day: 'Sun', weight: 20 },
   ]
 };
+const totalWeight = binData.bins.reduce((acc, bin) => acc + bin.currentWeight, 0)
 
-const BinVisual = ({ percentage }) => {
+const wasteTypesData = [
+  { type: 'Plastic', value: binData.bins[0].currentWeight / totalWeight * 100 },
+  { type: 'Metal', value: binData.bins[1].currentWeight / totalWeight * 100 },
+  { type: 'General', value: binData.bins[2].currentWeight / totalWeight * 100 },
+]
+
+const BinVisual = ({ percentage, name }) => {
   const fillHeight = `${percentage}%`;
 
   return (
@@ -50,7 +71,7 @@ const BinVisual = ({ percentage }) => {
             bottom: 0,
             width: '100%',
             height: fillHeight,
-            backgroundColor: '#2196f3',
+            backgroundColor: percentage > 70 ? '#f44336' : '#2196f3',
             transition: 'height 1s ease-in-out',
           }}
         />
@@ -83,6 +104,17 @@ const BinVisual = ({ percentage }) => {
           transform: 'rotate(-2deg)',
         }}
       />
+
+      <Typography
+        variant="subtitle1"
+        sx={{
+          textAlign: 'center',
+          mt: 3,
+          fontWeight: 'bold'
+        }}
+      >
+        {name}
+      </Typography>
     </Box>
   );
 };
@@ -92,60 +124,77 @@ const Dashboard = () => {
     <Box sx={{ p: 3, bgcolor: '#f5f5f5', minHeight: '100vh', width: '100%' }}>
       <Box sx={{
         width: '100%',
-        mb: 4  // Add margin bottom for spacing
+        mb: 4
       }}>
         <Typography
-          variant="h2"  // Changed from h1 to h2 for better proportions
+          variant="h2"
           sx={{
             fontWeight: 'bold',
-            color: '#1a237e',  // Added a color that matches the theme
-            pb: 2  // Add padding bottom
+            color: '#1a237e',
+            pb: 2
           }}
         >
-          Dashboard
+          Waste Management Dashboard
         </Typography>
       </Box>
-      
+
       <Grid container spacing={3}>
-        {/* Rest of your code remains the same */}
-        {/* Left Section */}
-        <Grid item xs={12} md={4}>
-          <Card sx={{ p: 3, height: '400px' }}>
+        {/* Bin Visualizations */}
+        <Grid item xs={12}>
+          <Card sx={{ p: 3 }}>
             <Typography variant="h5" gutterBottom>
-              Bin Status
+              Bin Occupancy
             </Typography>
-            <BinVisual percentage={binData.occupiedSpace} />
-            <Box sx={{ textAlign: 'center', mt: 2 }}>
-              <Typography variant="h6">
-                Current Weight: {binData.currentWeight}
-              </Typography>
-            </Box>
+            <Grid container spacing={3}>
+              {binData.bins.map((bin) => (
+                <Grid item xs={12} md={4} key={bin.id}>
+                  <BinVisual
+                    percentage={bin.occupiedSpace}
+                    name={bin.name}
+                  />
+                  <Box sx={{ textAlign: 'center', mt: 1 }}>
+                    <Typography variant="subtitle1">
+                      Current Weight: {bin.currentWeight}
+                    </Typography>
+                  </Box>
+                </Grid>
+              ))}
+            </Grid>
           </Card>
         </Grid>
 
-        {/* Middle Section */}
-        <Grid item xs={12} md={4}>
-          <Card sx={{ p: 3, height: '400px' }}>
+        {/* Waste Types Pie Chart */}
+        <Grid item xs={12} md={6}>
+          <Card sx={{ p: 3}}>
             <Typography variant="h5" gutterBottom>
-              Waste Types
+              Waste Types Breakdown
             </Typography>
-            <PieChart
-              series={[{
-                data: binData.wasteTypes,
-                innerRadius: 30,
-                paddingAngle: 2,
-                cornerRadius: 5,
-              }]}
-              height={300}
-            />
+            <Grid container spacing={3} justifyContent="center" style={{ flexGrow: 1 }}>
+              <Grid item>
+                <PieChart
+                  series={[{
+                    data: wasteTypesData,
+                    innerRadius: 30,
+                    paddingAngle: 2,
+                    cornerRadius: 5,
+                    arcLabel: (item) => `${item.type} (${Math.round(item.value)}%)`,
+                    arcLabelMinAngle: 20,
+                  }]}
+                  height={300}
+                  width={300}  // Ensure the width is set for better centering
+                />
+              </Grid>
+            </Grid>
           </Card>
         </Grid>
 
-        {/* Right Section */}
-        <Grid item xs={12} md={4}>
+
+
+        {/* Weekly Trend Bar Chart */}
+        <Grid item xs={12} md={6}>
           <Card sx={{ p: 3, height: '400px' }}>
             <Typography variant="h5" gutterBottom>
-              Weekly Trend
+              Weekly Waste Collection Trend
             </Typography>
             <BarChart
               xAxis={[{
