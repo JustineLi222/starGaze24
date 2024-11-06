@@ -10,7 +10,7 @@ const Webcam = () => {
   useEffect(() => {
     const initClient = () => {
       gapi.client.init({
-        clientId: 'YOUR_CLIENT_ID.apps.googleusercontent.com',
+        clientId: '580115535219-g6di49u4nh73pf6pq9s60o96dj5riler.apps.googleusercontent.com',
         scope: 'https://www.googleapis.com/auth/cloud-platform',
       });
     };
@@ -55,7 +55,7 @@ const Webcam = () => {
 
     try {
       const response = await axios.post(
-        `https://us-central1-aiplatform.googleapis.com/v1/projects/YOUR_PROJECT_ID/locations/us-central1/endpoints/YOUR_ENDPOINT_ID:predict`,
+        `https://us-central1-aiplatform.googleapis.com/v1/projects/580115535219/locations/us-central1/endpoints/1722821471027331072:predict`,
         jsonData,
         {
           headers: {
