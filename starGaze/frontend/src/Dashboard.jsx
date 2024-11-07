@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Box,
   Card,
@@ -39,23 +39,23 @@ const Dashboard = () => {
     {
       id: 1,
       name: 'Plastic Waste Bin',
-      occupiedSpace: 70,
+      occupiedSpace: 65,
       currentWeight: 45,
-      },
-      {
+    },
+    {
       id: 2,
       name: 'Metal Waste Bin',
       occupiedSpace: 30,
       currentWeight: 35,
-      },
-      {
+    },
+    {
       id: 3,
       name: 'General Waste Bin',
       occupiedSpace: 60,
       currentWeight: 40,
-      }
+    }
   ]);
-  
+
   const [predictedData, setPredictedData] = useState([
     { day: "Mon", plastic: 28, metal: 35, general: 14 },
     { day: "Tue", plastic: 49, metal: 16, general: 27 },
@@ -66,48 +66,73 @@ const Dashboard = () => {
     { day: "Sun", plastic: 50, metal: 28, general: 19 }
   ]
   )
-  
+
   const [totalWeight, setTotalWeight] = useState(bins.reduce((acc, bin) => acc + bin.currentWeight, 0))
-  
+
   const [wasteTypesData, setWasteTypesData] = useState([
     { type: 'Plastic', value: (bins[0].currentWeight / totalWeight) * 100 },
     { type: 'Metal', value: (bins[1].currentWeight / totalWeight) * 100 },
     { type: 'General', value: (bins[2].currentWeight / totalWeight) * 100 },
-    ]);
+  ]);
 
   const checkOccupancy = () => {
+
+
     console.log("checking occupancy")
+
     bins.forEach(bin => {
       if (bin.occupiedSpace >= 70) {
         setCompressingAlert([true, bin.name]);
         console.log(`The ${bin.name} is almost full. Starting compressing...`)
-        setTimeout(() => {  }, 1000)
-        const compressionSuccess = true;
-        if (compressionSuccess) {
-        setBins(bins.map(b => b.id === bin.id ? { ...b, occupiedSpace: b.occupiedSpace - 30 } : b))
-        } else {
-        console.log("Compression failed")
-        setCompressingFailAlert([true, bin.name]);
-        }
-      } 
-  })};
-  
-  
-    useEffect(() => {
-      setWasteTypesData([
-        { type: 'Plastic', value: (bins[0].currentWeight / totalWeight) * 100 },
-        { type: 'Metal', value: (bins[1].currentWeight / totalWeight) * 100 },
-        { type: 'General', value: (bins[2].currentWeight / totalWeight) * 100 },
-        ])
-      checkOccupancy();
-    }, [ ,bins])
-  
+        
+          const compressionSuccess = true;
+          if (compressionSuccess) {
+            setBins(bins.map(b => b.id === bin.id ? { ...b, occupiedSpace: b.occupiedSpace / 2 } : b))
+          } else {
+            setTimeout(() => {
+            console.log("Compression failed")
+            setCompressingFailAlert([true, bin.name]);
+            setCompressingAlert([false, null]);
+          }, 3000)
+          }
+        
+
+      }
+    })
+  };
+  useEffect(() => {
+    let counter = 0;
+    const interval = setInterval(() => {
+      setBins(bins => bins.map(bin => bin.id === 1 ? {
+        ...bin,
+        occupiedSpace: bin.occupiedSpace + 1,
+        currentWeight: bin.currentWeight + 1
+      } : bin));
+      counter += 1;
+      if (counter >= 5) {
+        clearInterval(interval);
+      }
+    }, 1000);
+    // Cleanup the interval on component unmount 
+    return () => clearInterval(interval);
+  }, []);
+
+
+  useEffect(() => {
+    setWasteTypesData([
+      { type: 'Plastic', value: (bins[0].currentWeight / totalWeight) * 100 },
+      { type: 'Metal', value: (bins[1].currentWeight / totalWeight) * 100 },
+      { type: 'General', value: (bins[2].currentWeight / totalWeight) * 100 },
+    ])
+    checkOccupancy();
+  }, [, bins])
+
   return (
     <Box sx={{ p: 3, bgcolor: '#f5f5f5', minHeight: '100vh', width: '100%' }}>
       {compressingAlert[0] && <Alert severity="warning" onClose={() => setCompressingAlert([false, null])}>The {compressingAlert[1]} is almost full. Starting compressing...</Alert>}
       {compressingFailAlert[0] && <Alert severity="error" onClose={() => setCompressingFailAlert([false, null])}>The {compressingFailAlert[1]} cannot be further compressed. Please change the bin before its full.</Alert>}
       <Typography variant="h2" sx={{ fontWeight: 'bold', color: '#1a237e', pb: 2, textAlign: 'center' }}>
-        Inflight Waste Categorization and Monitoring System
+        In-flight Automated Recycling System
       </Typography>
 
       <Grid container spacing={3}>
@@ -168,7 +193,7 @@ const Dashboard = () => {
                 { label: 'Metal', data: predictedData.map(item => item.metal), color: '#ff9800' },
                 { label: 'General', data: predictedData.map(item => item.general), color: '#4caf50' },
               ]}
-              yAxis={[ { min: 0,  }, ]}
+              yAxis={[{ min: 0, },]}
               height={300}
             />
           </Card>
